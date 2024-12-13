@@ -1,4 +1,4 @@
-import { _decorator, Component, Vec3, Node, AudioSource, KeyCode, UITransform, RigidBody2D, BoxCollider2D, Contact2DType } from 'cc';
+import { _decorator, Component, Vec3, Node, AudioSource, KeyCode, UITransform, RigidBody2D } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerControl')
@@ -55,9 +55,7 @@ export class PlayerControl extends Component {
             return;
         }
         this.isJumping=true
-        this.body.linearVelocity = cc.v2(this.body.linearVelocity.x, 32)
-        this.playSound()
-        // cc.log(this.body.linearVelocity)
+        this.body.linearVelocity.y = 800
     }
 
     jumpByStepOld(step: number) {
@@ -77,19 +75,21 @@ export class PlayerControl extends Component {
     }
 
     private moveLeft() {
-        this.accel -= 10;
-        this.xSpeed = -100 + this.accel;
-        if (this.xSpeed < -this.maxMoveSpeed) {
-            this.xSpeed = -this.maxMoveSpeed;
-        }
+        // this.accel -= 10;
+        // this.xSpeed = -300 + this.accel;
+        // if (this.xSpeed < -this.maxMoveSpeed) {
+        //     this.xSpeed = -this.maxMoveSpeed;
+        // }
+        this.body.applyLinearImpulse
     }
 
     private moveRight() {
-        this.accel += 10;
-        this.xSpeed = 100 + this.accel;
-        if (this.xSpeed > this.maxMoveSpeed) {
-            this.xSpeed = this.maxMoveSpeed;
-        }
+        // this.accel += 10;
+        // this.xSpeed = 300 + this.accel;
+        // if (this.xSpeed > this.maxMoveSpeed) {
+        //     this.xSpeed = this.maxMoveSpeed;
+        // }
+        this.body.linearVelocity.x = 400
     }
 
     private stopMove() {
@@ -145,8 +145,6 @@ export class PlayerControl extends Component {
     protected start() {
         this.positionY = this.node.position.y;
         this.body = this.getComponent(RigidBody2D)
-        let collider = this.getComponent(BoxCollider2D);
-        collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         this.anim = this.node.getComponent(cc.Animation);
         this.anim.getState("figure_idle_new").wrapMode = cc.AnimationClip.WrapMode.Loop;
         this.anim.getState("figure_idle_new").repeatCount = Infinity
@@ -156,10 +154,6 @@ export class PlayerControl extends Component {
         this.minX = this.node.worldPosition.x;
         this.maxX = this.node.worldPosition.x + this.mapNode.getComponent(UITransform).contentSize.width - 5;
         cc.log("minX " + this.minX + " maxX " + this.maxX)
-    }
-
-    onBeginContact() {
-        this.isJumping = false
     }
 
     // called every frame
@@ -173,8 +167,8 @@ export class PlayerControl extends Component {
             this.gameOver = true;
             // this.node.parent.getChildByName("slide").active = true;
         }
-        let dir = cc.v3(this.xSpeed * dt, 0, 0)
-        this.node.position = this.node.position.add(dir);
+        // let dir = cc.v3(this.xSpeed * dt, 0, 0)
+        // this.node.position = this.node.position.add(dir);
         let x = this.node.worldPosition.x
         if (x < this.minX) {
             x = this.minX
@@ -183,10 +177,36 @@ export class PlayerControl extends Component {
         }
         this.node.setWorldPosition(x, this.node.worldPosition.y, this.node.worldPosition.z)
 
+        if (this.isJumping) {
+            cc.log(this.body.linearVelocity.y)
+            if (this.body.linearVelocity.y == 0) {
+                this.isJumping = false
+            }
+        }
+        // // 跳跃
         // if (this.isJumping) {
-        //     cc.log(this.body.linearVelocity.y)
-        //     if (this.body.linearVelocity.y == 0) {
-        //         this.isJumping = false
+        //     this._curJumpTime += dt;
+        //     if (this._curJumpTime > this.jumpDuration) {
+        //         this.isJumping = false;
+        //     } else {
+        //         let dirY;
+
+        //         if (this._curJumpTime >= this.jumpDuration / 2) {
+        //             let tmpY = this._curJumpSpeed * dt;
+        //             if (tmpY > this._tmpHeight) {
+        //                 tmpY = this._tmpHeight;
+        //             }
+        //             this._tmpHeight -= tmpY;
+        //             dirY = cc.v3(0, -tmpY, 0);
+        //         } else {
+        //             let tmpY = this._curJumpSpeed * dt;
+        //             if (this._tmpHeight + tmpY > this.jumpHeight) {
+        //                 tmpY = this.jumpHeight - this._tmpHeight;
+        //             }
+        //             this._tmpHeight += tmpY;
+        //             dirY = cc.v3(0, tmpY, 0);
+        //         }
+        //         this.node.position = this.node.position.add(dirY);
         //     }
         // }
     }
