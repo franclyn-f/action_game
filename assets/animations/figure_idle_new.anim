@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.AnimationClip",
-    "_name": "figure_idle",
+    "_name": "figure_idle_new",
     "_objFlags": 0,
     "__editorExtras__": {
       "embeddedPlayerGroups": []
@@ -9,9 +9,9 @@
     "_native": "",
     "sample": 60,
     "speed": 1,
-    "wrapMode": 1,
+    "wrapMode": 2,
     "enableTrsBlending": false,
-    "_duration": 0.6666666666666666,
+    "_duration": 0.5166666666666667,
     "_hash": 500763545,
     "_tracks": [
       {
@@ -58,20 +58,20 @@
     "__type__": "cc.ObjectCurve",
     "_times": [
       0,
-      0.3,
-      0.65
+      0.26666666666666666,
+      0.5
     ],
     "_values": [
       {
-        "__uuid__": "2825b375-b439-4102-b2c8-d4d135483c67@b65a5",
+        "__uuid__": "9572b35d-0e33-47d3-a0b4-a280ab7a4d95@f9941",
         "__expectedType__": "cc.SpriteFrame"
       },
       {
-        "__uuid__": "2825b375-b439-4102-b2c8-d4d135483c67@3a8d4",
+        "__uuid__": "6dd97419-c405-4133-83bf-f8f8432be488@f9941",
         "__expectedType__": "cc.SpriteFrame"
       },
       {
-        "__uuid__": "2825b375-b439-4102-b2c8-d4d135483c67@b65a5",
+        "__uuid__": "9572b35d-0e33-47d3-a0b4-a280ab7a4d95@f9941",
         "__expectedType__": "cc.SpriteFrame"
       }
     ]

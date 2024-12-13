@@ -65,7 +65,7 @@ export class PlayerControl extends Component {
         this.audio.play()
     }
 
-    private moveLeft() {
+    private moveRight() {
         this.accel -= 10;
         this.xSpeed = -100 + this.accel;
         if (this.xSpeed < -this.maxMoveSpeed) {
@@ -73,7 +73,7 @@ export class PlayerControl extends Component {
         }
     }
 
-    private moveRight() {
+    private moveLeft() {
         this.accel += 10;
         this.xSpeed = 100 + this.accel;
         if (this.xSpeed > this.maxMoveSpeed) {
@@ -134,13 +134,13 @@ export class PlayerControl extends Component {
     protected start() {
         this.positionY = this.node.position.y;
         this.anim = this.node.getComponent(cc.Animation);
-        this.anim.getState("figure_idle_new").wrapMode = cc.AnimationClip.WrapMode.Loop;
-        this.anim.getState("figure_idle_new").repeatCount = Infinity
-        let animState = this.anim.play("figure_idle_new")
+        this.anim.getState("figure_idle").wrapMode = cc.AnimationClip.WrapMode.Loop;
+        this.anim.getState("figure_idle").repeatCount = Infinity
+        let animState = this.anim.play("figure_idle")
         this.audio = this.node.getComponent(AudioSource);
         this.mapNode = this.node.parent.getChildByName("game")
-        this.minX = this.node.worldPosition.x;
-        this.maxX = this.node.worldPosition.x + this.mapNode.getComponent(UITransform).contentSize.width - 5;
+        this.maxX = this.mapNode.worldPosition.x;
+        this.minX = this.mapNode.worldPosition.x - this.mapNode.getComponent(UITransform).contentSize.width + cc.winSize.width + 5;
         cc.log("minX " + this.minX + " maxX " + this.maxX)
     }
 
@@ -156,14 +156,14 @@ export class PlayerControl extends Component {
             // this.node.parent.getChildByName("slide").active = true;
         }
         let dir = cc.v3(this.xSpeed * dt, 0, 0)
-        this.node.position = this.node.position.add(dir);
-        let x = this.node.worldPosition.x
+        this.mapNode.position = this.mapNode.position.add(dir);
+        let x = this.mapNode.worldPosition.x
         if (x < this.minX) {
             x = this.minX
         } else if (x > this.maxX) {
             x = this.maxX
         }
-        this.node.setWorldPosition(x, this.node.worldPosition.y, this.node.worldPosition.z)
+        this.mapNode.setWorldPosition(x, this.mapNode.worldPosition.y, this.mapNode.worldPosition.z)
 
         // let curX = this.node.worldPosition.x
         // // 限制在摄像机的范围内

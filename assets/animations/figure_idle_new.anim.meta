@@ -2,12 +2,12 @@
   "ver": "2.0.3",
   "importer": "animation-clip",
   "imported": true,
-  "uuid": "020e3004-df67-4a5f-a4fa-d9aee4e51568",
+  "uuid": "b23a11c7-410f-4609-a96c-3e81f3354b78",
   "files": [
     ".cconb"
   ],
   "subMetas": {},
   "userData": {
-    "name": "brick_jump"
+    "name": "figure_idle_new"
   }
 }

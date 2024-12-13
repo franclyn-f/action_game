@@ -493,8 +493,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": -44.111,
+      "x": 3.747,
+      "y": -2.894,
       "z": 0
     },
     "_lrot": {
@@ -531,8 +531,8 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 1274,
-      "height": 1176
+      "width": 440,
+      "height": 648
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -561,7 +561,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "637d7f2a-fa62-4b48-ab26-ebdd4aa6f4b7@f9941",
+      "__uuid__": "c3447388-6bf8-48fc-80c5-4d6dabb744ab@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
