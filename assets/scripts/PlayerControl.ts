@@ -1,4 +1,4 @@
-import { _decorator, Component, Vec3, Node, AudioSource, KeyCode, UITransform, RigidBody2D, BoxCollider2D, Contact2DType } from 'cc';
+import { _decorator, Component, Vec3, Node, AudioSource, KeyCode, UITransform, RigidBody2D, BoxCollider2D, Contact2DType, animation } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerControl')
@@ -20,6 +20,8 @@ export class PlayerControl extends Component {
     public jumpTime:number = 2;
     @property(cc.AudioSource)
     private audio: AudioSource;
+    @property(cc.Integer)
+    private blood: number = 3;
 
     private xSpeed: number = 0;
     private isJumping: boolean = false;
@@ -43,6 +45,7 @@ export class PlayerControl extends Component {
     private maxX;
     private mapNode: Node;
     private body: RigidBody2D;
+    private animControl: animation.AnimationController;
 
 
     private addEventListeners() {
@@ -55,9 +58,33 @@ export class PlayerControl extends Component {
             return;
         }
         this.isJumping=true
+        this.animControl.setValue("isJumping", true)
         this.body.linearVelocity = cc.v2(this.body.linearVelocity.x, 32)
         this.playSound()
+        // cc.log(this.animControl.getValue("isJumping"))
+        // cc.log(this.animControl.getCurrentStateStatus(0))
+        // cc.log(this.animControl.getCurrentClipStatuses(0))
         // cc.log(this.body.linearVelocity)
+    }
+
+    public decBlood() {
+        if (this.blood > 0) {
+            this.blood -= 1
+        }
+        let heartsNode = this.node.parent.getChildByPath("Camera/state/hearts")
+        if (this.blood == 2) {
+            heartsNode.getChildByName("heart2").active=false
+        }
+        if (this.blood == 1) {
+            heartsNode.getChildByName("heart1").active=false
+        }
+        if (this.blood == 0) {
+            heartsNode.getChildByName("heart0").active=false
+        }
+        cc.log("blood " + this.blood)
+        // 向相反的方向弹跳一下
+        let dir = this.xSpeed > 0 ? -1 : 1
+        this.body.linearVelocity = cc.v2(dir * 13, 20)
     }
 
     jumpByStepOld(step: number) {
@@ -82,6 +109,11 @@ export class PlayerControl extends Component {
         if (this.xSpeed < -this.maxMoveSpeed) {
             this.xSpeed = -this.maxMoveSpeed;
         }
+        this.animControl.setValue("speed", this.xSpeed);
+        // cc.log(this.animControl.getValue("speed"))
+        // cc.log(this.animControl.getValue("isJumping"))
+        // cc.log(this.animControl.getCurrentStateStatus(0))
+        // cc.log(this.animControl.getCurrentClipStatuses(0))
     }
 
     private moveRight() {
@@ -90,11 +122,17 @@ export class PlayerControl extends Component {
         if (this.xSpeed > this.maxMoveSpeed) {
             this.xSpeed = this.maxMoveSpeed;
         }
+        this.animControl.setValue("speed", this.xSpeed);
+        // cc.log(this.animControl.getValue("isJumping"))
+        // cc.log(this.animControl.getValue("speed"))
+        // cc.log(this.animControl.getCurrentStateStatus(0))
+        // cc.log(this.animControl.getCurrentClipStatuses(0))
     }
 
     private stopMove() {
         this.xSpeed = 0;
         this.accel = 0;
+        this.animControl.setValue("speed", this.xSpeed);
     }
 
 
@@ -133,11 +171,8 @@ export class PlayerControl extends Component {
 
     // use this for initialization
     protected onLoad() {
-
-
         // 主角当前水平方向速度
         this.xSpeed = 0;
-
         // 初始化输入监听
         this.addEventListeners();
     }
@@ -146,11 +181,12 @@ export class PlayerControl extends Component {
         this.positionY = this.node.position.y;
         this.body = this.getComponent(RigidBody2D)
         let collider = this.getComponent(BoxCollider2D);
+        this.animControl = this.getComponent(animation.AnimationController)
         collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-        this.anim = this.node.getComponent(cc.Animation);
-        this.anim.getState("figure_idle_new").wrapMode = cc.AnimationClip.WrapMode.Loop;
-        this.anim.getState("figure_idle_new").repeatCount = Infinity
-        let animState = this.anim.play("figure_idle_new")
+        // this.anim = this.node.getComponent(cc.Animation);
+        // this.anim.getState("figure_idle_new").wrapMode = cc.AnimationClip.WrapMode.Loop;
+        // this.anim.getState("figure_idle_new").repeatCount = Infinity
+        // let animState = this.anim.play("figure_idle_new")
         this.audio = this.node.getComponent(AudioSource);
         this.mapNode = this.node.parent.getChildByName("game")
         this.minX = this.node.worldPosition.x;
@@ -160,21 +196,22 @@ export class PlayerControl extends Component {
 
     onBeginContact() {
         this.isJumping = false
+        this.animControl.setValue("isJumping", false)
     }
 
     // called every frame
     protected update(dt: number) {
-        // if (this.gameOver) {
-        //     this.getComponent(RigidBody2D).gravityScale = 0
-        //     return;
-        // }
+        if (this.blood <= 0) {
+            cc.log("gameover")
+            cc.director.loadScene("gameover")
+        }
         // 掉入陷阱，游戏结束
         if (this.node.position.y < this.positionY - 20) {
-            this.gameOver = true;
+            this.gameOver = true
             // this.node.parent.getChildByName("slide").active = true;
         }
         let dir = cc.v3(this.xSpeed * dt, 0, 0)
-        this.node.position = this.node.position.add(dir);
+        this.node.position = this.node.position.add(dir)
         let x = this.node.worldPosition.x
         if (x < this.minX) {
             x = this.minX
@@ -182,6 +219,11 @@ export class PlayerControl extends Component {
             x = this.maxX
         }
         this.node.setWorldPosition(x, this.node.worldPosition.y, this.node.worldPosition.z)
+
+        // cc.log(this.animControl.getValue("isJumping"))
+        // cc.log(this.animControl.getValue("speed"))
+        // cc.log(this.animControl.getCurrentStateStatus(0))
+        // cc.log(this.animControl.getCurrentClipStatuses(0))
 
         // if (this.isJumping) {
         //     cc.log(this.body.linearVelocity.y)
