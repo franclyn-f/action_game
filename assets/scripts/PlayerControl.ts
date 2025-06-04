@@ -1,32 +1,31 @@
-import { _decorator, Component, Vec3, Node, AudioSource, KeyCode, UITransform, RigidBody2D, BoxCollider2D, Contact2DType, animation } from 'cc';
+import { _decorator, Component, input, Input, Vec3, v2, v3, director, log, Node, SystemEvent, systemEvent, EventKeyboard, CCInteger, AudioSource, KeyCode, UITransform, RigidBody2D, BoxCollider2D, Contact2DType, animation } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerControl')
 export class PlayerControl extends Component {
-    @property(cc.Integer)
-    private jumpHeight: number = 0;
     // 主角跳跃持续时间
-    @property(cc.Integer)
+    @property(CCInteger)
     private jumpDuration: number = 0;
     // 最大移动速度
-    @property(cc.Integer)
+    @property(CCInteger)
     private maxMoveSpeed: number = 1000;
     // 加速度
-    @property(cc.Integer)
+    @property(CCInteger)
     private accel: number = 0;
-    @property(cc.Integer)
+    @property(CCInteger)
     public jumpHeight = 100;
-    @property(cc.Integer)
+    @property(CCInteger)
     public jumpTime:number = 2;
-    @property(cc.AudioSource)
+    @property(AudioSource)
     private audio: AudioSource;
-    @property(cc.Integer)
+    @property(CCInteger)
     private blood: number = 3;
 
     private xSpeed: number = 0;
     private isJumping: boolean = false;
+    private downKeys: Set<any> = new Set();
      // 跳跃步长
-     private _jumpStep: number = 100;
+    private _jumpStep: number = 100;
     // 当前跳跃时间
     private _curJumpTime: number = 0;
     // 当前跳跃速度
@@ -40,7 +39,7 @@ export class PlayerControl extends Component {
     private _tmpHeight = 0;
     public gameOver = false;
     private positionY: number;
-    private anim: cc.Animation;
+    private anim: Animation;
     private minX;
     private maxX;
     private mapNode: Node;
@@ -49,8 +48,8 @@ export class PlayerControl extends Component {
 
 
     private addEventListeners() {
-        cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
-        cc.systemEvent.on(cc.SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
+        input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
+        input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
     }
 
     jumpByStep(step: number) {
@@ -59,7 +58,7 @@ export class PlayerControl extends Component {
         }
         this.isJumping=true
         this.animControl.setValue("isJumping", true)
-        this.body.linearVelocity = cc.v2(this.body.linearVelocity.x, 32)
+        this.body.linearVelocity = v2(this.body.linearVelocity.x, 32)
         this.playSound()
         // cc.log(this.animControl.getValue("isJumping"))
         // cc.log(this.animControl.getCurrentStateStatus(0))
@@ -81,10 +80,10 @@ export class PlayerControl extends Component {
         if (this.blood == 0) {
             heartsNode.getChildByName("heart0").active=false
         }
-        cc.log("blood " + this.blood)
+        log("blood " + this.blood)
         // 向相反的方向弹跳一下
         let dir = this.xSpeed > 0 ? -1 : 1
-        this.body.linearVelocity = cc.v2(dir * 13, 20)
+        this.body.linearVelocity = v2(dir * 13, 20)
     }
 
     jumpByStepOld(step: number) {
@@ -137,25 +136,12 @@ export class PlayerControl extends Component {
 
 
 
-
-    private onKeyDown(event: cc.Event.EventKeyboard) {
+    private onKeyDown(event: EventKeyboard) {
         // cc.log("on key down");
-        switch ((event as any).keyCode) {
-            case KeyCode.KEY_A:
-            case KeyCode.ARROW_LEFT:
-                this.moveLeft();
-                break;
-            case KeyCode.KEY_D:
-            case KeyCode.ARROW_RIGHT:
-                this.moveRight();
-                break;
-            case KeyCode.SPACE:
-                this.jumpByStep(1);
-                break;
-        }
+        this.downKeys.add(event.keyCode)
     }
 
-    private onKeyUp(event: cc.Event.EventKeyboard) {
+    private onKeyUp(event: EventKeyboard) {
         // cc.log("on key up");
         switch ((event as any).keyCode) {
             case KeyCode.KEY_A:
@@ -167,6 +153,7 @@ export class PlayerControl extends Component {
                 this.stopMove();
                 break;
         }
+        this.downKeys.delete(event.keyCode)
     }
 
     // use this for initialization
@@ -191,7 +178,7 @@ export class PlayerControl extends Component {
         this.mapNode = this.node.parent.getChildByName("game")
         this.minX = this.node.worldPosition.x;
         this.maxX = this.node.worldPosition.x + this.mapNode.getComponent(UITransform).contentSize.width - 5;
-        cc.log("minX " + this.minX + " maxX " + this.maxX)
+        log("minX " + this.minX + " maxX " + this.maxX)
     }
 
     onBeginContact() {
@@ -201,16 +188,26 @@ export class PlayerControl extends Component {
 
     // called every frame
     protected update(dt: number) {
+        // log(this.downKeys);
+        if (this.downKeys.has(KeyCode.KEY_A) || this.downKeys.has(KeyCode.ARROW_LEFT)) {
+            this.moveLeft();
+        } else if (this.downKeys.has(KeyCode.KEY_D) || this.downKeys.has(KeyCode.ARROW_RIGHT)) {
+            this.moveRight();
+        }
+        if (this.downKeys.has(KeyCode.SPACE)) {
+            this.jumpByStep(1);
+        }
         if (this.blood <= 0) {
-            cc.log("gameover")
-            cc.director.loadScene("gameover")
+            log("gameover")
+            director.loadScene("gameover")
         }
         // 掉入陷阱，游戏结束
         if (this.node.position.y < this.positionY - 20) {
-            this.gameOver = true
+            director.loadScene("gameover")
+            // this.gameOver = true
             // this.node.parent.getChildByName("slide").active = true;
         }
-        let dir = cc.v3(this.xSpeed * dt, 0, 0)
+        let dir = v3(this.xSpeed * dt, 0, 0)
         this.node.position = this.node.position.add(dir)
         let x = this.node.worldPosition.x
         if (x < this.minX) {
